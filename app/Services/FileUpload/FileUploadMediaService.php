@@ -32,30 +32,50 @@ class FileUploadMediaService implements FileUploadInterface
  * FileService($file)->store()
  * */
 
+    /**
+     * FileUploadMediaService constructor.
+     * @param $file
+     */
     public function __construct($file)
     {
-        $this->image = new FileUploadService($file); 
+        $this->image = new FileUploadService($file);
     }
 
+    /**
+     * @param Model $model
+     * @return $this
+     */
     public function setModel(Model $model)
     {
         $this->fileName = $this->image->store();
 
         $this->media = $model->addMedia($this->image->getFilePath());
-        
+
         return $this;
     }
 
-    public function store($collection = null, $disk = '')
+    /**
+     * @param string $collection
+     * @param string $disk
+     */
+    public function store($collection = 'default', $disk = '')
     {
         $this->media->toMediaCollection($collection, $disk);
     }
 
+    /**
+     * @return mixed
+     */
     public function getFileName()
     {
         return $this->fileName;
     }
 
+    /**
+     * @param $name
+     * @param $arguments
+     * @return $this
+     */
     public function __call($name, $arguments)
     {
         try{
@@ -65,11 +85,11 @@ class FileUploadMediaService implements FileUploadInterface
         }
 
         try{
-            $this->image->$name(...$arguments);
+            $this->image?->$name(...$arguments);
         }catch(Exception $e){
 
         }
-        
+
         return $this;
     }
 

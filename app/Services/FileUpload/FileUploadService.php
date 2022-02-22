@@ -7,11 +7,9 @@ use App\Services\FileUpload\Trait\CreateDirectory;
 use App\Services\FileUpload\Trait\ResizeImage;
 use Exception;
 use Illuminate\Http\File;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image as ImageFacade;
-use Intervention\Image\Image;
+use Intervention\Image\Facades\Image;
 
 class FileUploadService implements FileUploadInterface
 {
@@ -28,10 +26,10 @@ class FileUploadService implements FileUploadInterface
         $quality,
         $image;
 
-/*
- * FileService($file)->store()
- * */
-
+    /**
+     * FileUploadService constructor.
+     * @param $file
+     */
     public function __construct($file)
     {
         $this->file = is_string($file) ? new File($file) : $file;
@@ -44,25 +42,23 @@ class FileUploadService implements FileUploadInterface
     }
 
     /**
-     * @param null $path   # Not real path just folder name
-     * @param null $disk   # ['local', 'public', 's3', ...]
+     * @param string $path # Not real path just folder name
+     * @param string $disk # ['local', 'public', 's3', ...]
      * @return string      # file name
      */
-    public function store($path = '', $disk = null)
+    public function store($path = '', $disk = '')
     {
         if ($this->image) {
 
             $this->resizeImage($this->image);
-            
-            $this->storeAsImage($path, $disk);
 
-            return $this->fileName;
+            return $this->storeAsImage($path, $this->getDisk($disk));
         }
 
-        $this->fileName = $this->file->store($path, $disk);
+        $this->fileName = $this->file->store($path, $this->getDisk($disk));
 
         // Create folder if not exists, or abort uploading
-        if (!$this->createDirectoryIfNotExists($path, $disk)) {
+        if (!$this->createDirectoryIfNotExists($path, $this->getDisk($disk))) {
             return false;
         }
 
@@ -71,6 +67,11 @@ class FileUploadService implements FileUploadInterface
         return $this->fileName;
     }
 
+    /**
+     * @param $path
+     * @param $disk
+     * @return bool
+     */
     public function storeAsImage ($path, $disk)
     {
         $this->fileName = $this->file->hashName($path);
@@ -80,9 +81,11 @@ class FileUploadService implements FileUploadInterface
             return false;
         }
 
-        $this->filePath = Storage::disk($this->getDisk($disk))->path($this->fileName);
+        $this->filePath = Storage::disk($disk)->path($this->fileName);
 
         $this->image->save($this->filePath, $this->quality);
+
+        return $this->fileName;
     }
 
     /**
@@ -99,29 +102,41 @@ class FileUploadService implements FileUploadInterface
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function getFileName()
     {
         return $this->fileName;
     }
 
+    /**
+     * @return mixed
+     */
     public function getFilePath()
     {
         return $this->filePath;
     }
 
+    /**
+     * @param null $disk
+     * @return string
+     */
     public function getDisk($disk = null)
     {
         return $disk ?: 'public';
     }
 
     /**
-     *  magic method to call all methods in Intervention\Image package 
+     *  magic method to call all methods in Intervention\Image package
+     * @param $name
+     * @param $arguments
      * @return FileUploadService
      */
     public function __call($name, $arguments)
     {
         try{
-            $this->image->$name(...$arguments);
+            $this->image?->$name(...$arguments);
         }catch(Exception $e){
 
         }

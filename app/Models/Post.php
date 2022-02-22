@@ -34,7 +34,7 @@ class Post extends Model  implements HasMedia
             ->crop(50, 50, 10, 10)
             ->setModel($this)
             ->usingName('ImageName')
-            ->store('posts');
+            ->store();
     }
 
     public function getImgAttribute()

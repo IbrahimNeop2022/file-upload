@@ -7,7 +7,7 @@ use Exception;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Image;
 
-trait CreateDirectory 
+trait CreateDirectory
 {
 
     /**
@@ -15,8 +15,9 @@ trait CreateDirectory
      *
      * @access protected
      *
-     * @param  string $folder
+     * @param string $folder
      *
+     * @param $disk
      * @return bool
      */
     public function createDirectoryIfNotExists($folder, $disk): bool

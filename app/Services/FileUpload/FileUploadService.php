@@ -35,7 +35,7 @@ class FileUploadService implements FileUploadInterface
         $this->file = is_string($file) ? new File($file) : $file;
 
         if (Str::contains($file->getMimeType(), 'image')) {
-            $this->image = ImageFacade::make($file);
+            $this->image = Image::make($file);
         }
 
         $this->quality = config('file-upload.quality');

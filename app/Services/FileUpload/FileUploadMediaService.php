@@ -3,7 +3,10 @@
 
 namespace App\Services\FileUpload;
 
-
+use App\Services\FileUpload\Trait\CreateDirectory;
+use App\Services\FileUpload\Trait\ResizeImage;
+use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -11,9 +14,10 @@ use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image as ImageFacade;
 use Intervention\Image\Image;
 
-class FileUploadMediaService
+class FileUploadMediaService implements FileUploadInterface
 {
 
+    use ResizeImage;
     /**
      * @var
      */
@@ -21,66 +25,51 @@ class FileUploadMediaService
         $model,
         $media,
         $file,
-        $size,
-        $maxWidth,
-        $maxHeight,
-        $quality,
+        $fileName,
         $image;
 
 /*
  * FileService($file)->store()
  * */
 
-    public function __construct($model, $file)
+    public function __construct($file)
     {
-        $this->file = is_string($file) ? new File($file) : $file;
+        $this->image = new FileUploadService($file); 
+    }
 
-        if (Str::contains($file->getMimeType(), 'image')) {
-            $this->image = ImageFacade::make($file);
-        }
+    public function setModel(Model $model)
+    {
+        $this->fileName = $this->image->store();
 
-        $this->model = $model;
-
-        $this->media = $this->model->addMedia($this->file);
-
-        $this->size = $file->getSize();
-
-        $this->maxWidth = 1024;
-
-        $this->maxHeight = 768;
-
-        $this->quality = 60;
+        $this->media = $model->addMedia($this->image->getFilePath());
+        
+        return $this;
     }
 
     public function store($collection = null, $disk = '')
     {
-        if ($this->image) {
-            $this->resizeImage($this->image);
-        }
-
         $this->media->toMediaCollection($collection, $disk);
     }
 
-    public function resizeImage(Image $image)
+    public function getFileName()
     {
-        if ($image->width() > $this->maxWidth) {
-            $image->resize($this->maxWidth, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-        }
-
-        if ($image->height() > $this->maxHeight) {
-            $image->resize(null, $this->maxHeight, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-        }
+        return $this->fileName;
     }
 
     public function __call($name, $arguments)
     {
-        $this->media->$name(...$arguments);
+        try{
+            $this->media?->$name(...$arguments);
+        }catch(Exception $e){
+
+        }
+
+        try{
+            $this->image->$name(...$arguments);
+        }catch(Exception $e){
+
+        }
+        
         return $this;
     }
 

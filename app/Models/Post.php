@@ -22,17 +22,26 @@ class Post extends Model  implements HasMedia
 
     protected $guarded = [];
 
+
     public function setImageAttribute($image)
     {
-        $fileName = (new FileUploadService($image))->store('posts');
-        (new FileUploadMediaService($this, $image))->store('images');
-        $this->attributes['image'] = $fileName;
+        $img = (new FileUploadService($image))->resize(100,100);
+        $this->attributes['image'] = $img->store('posts');
 
+
+        (new FileUploadMediaService($image))
+            ->resize(150,100)
+            ->crop(50, 50, 10, 10)
+            ->setModel($this)
+            ->usingName('ImageName')
+            ->store('posts');
     }
 
     public function getImgAttribute()
     {
-        return $this->getFirstMediaUrl('images');
-//        return $this->image ? asset('storage/'. $this->image) : asset('images/post.jpg');
+        if($this->getFirstMediaUrl('posts')) {
+            return $this->getFirstMediaUrl('posts');
+        }
+       return $this->image ? asset('storage/'. $this->image) : asset('images/post.jpg');
     }
 }

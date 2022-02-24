@@ -10,13 +10,13 @@ composer require intervention/image
 
 open your Laravel config file config/app.php and add the following lines.
 
-In the $providers array add the service providers for this package.
+In the _$providers_ array add the service providers for this package.
 
 ```
 Intervention\Image\ImageServiceProvider::class
 ```
 
-Add the facade of this package to the $aliases array.
+Add the facade of this package to the _$aliases_ array.
 
 ```
 'Image' => Intervention\Image\Facades\Image::class

@@ -119,6 +119,7 @@ Here are a few short examples of what you can do:
 $post = new Post();
 //...
 $post->save();
+
 (new FileUploadMediaService(request('image')))->setModel($post)->store();
 
 ```
@@ -144,6 +145,7 @@ You can add collection and disk, by default disk is public.
 $post = new Post();
 //...
 $post->save();
+
 (new FileUploadMediaService(request('image')))->setModel($post)->store('images', 's3');
 
 ```
@@ -154,6 +156,7 @@ You can use **_all methods in intervention image package_**.
 $post = new Post();
 //...
 $post->save();
+
 (new FileUploadMediaService(request('image')))
     ->resize(500, 200)
     ->crop(100, 100, 25, 25)
@@ -167,6 +170,7 @@ You can use **_all methods in media library package_**.
 $post = new Post();
 //...
 $post->save();
+
 (new FileUploadMediaService(request('image')))
     ->resize(500, 200)
     ->setModel($post)
@@ -176,6 +180,28 @@ $post->save();
         'image-code'  => '12458558',
     ])
     ->store('image', 's3');
+```
+
+To retrieve files you can use the getMedia-method:
+
+```php
+    $mediaItems = $yourModel->getMedia();
+```
+
+the getFirstMedia and getFirstMediaUrl convenience-methods are also provided:
+
+```php
+    $media = $yourModel->getFirstMedia();
+
+    $url = $yourModel->getFirstMediaUrl();
+```
+
+If you want to remove all associated media in a specific collection you can use the clearMediaCollection method. It also accepts the collection name as an optional parameter:
+
+```php
+    $yourModel->clearMediaCollection(); // all media will be deleted
+
+    $yourModel->clearMediaCollection('images'); // all media in the images collection will be deleted
 ```
 
 **_recommend:_** read [Laravel-media library documentation](https://spatie.be/docs/laravel-medialibrary).
